@@ -2,10 +2,15 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/pkg/errors"
 )
 
+const framesPerGame = 10
+const pinCount = 10
+
+/*
+	game is a bowling game. It is composed of a series of frames, of which there are ten.
+*/
 type game struct {
 	frames []frame
 }
@@ -14,15 +19,19 @@ func NewGame() game {
 	return game{}
 }
 
+/*
+	frame stores data associated with a given set of fresh pins.	A frame is considered finished when either two rolls have been made, or a strike has occurred.
+	Evaluation of the bonus score is not required to mark a frame finished.
+*/
 type frame struct {
-	rollScore    int
-	bonusScore int
+	rollScore     int
+	bonusScore    int
 	acceptedRolls int
 	finished      bool
 	bonus         int
 }
 
-func (f *frame) getTotalScore() int{
+func (f *frame) getTotalScore() int {
 	return f.rollScore + f.bonusScore
 }
 
@@ -33,19 +42,21 @@ func (g *game) getCurrentFrame() (frame, error) {
 	return g.frames[len(g.frames)-1], nil
 }
 
-func (f *frame) remainingRolls() int {
-	if f.finished {
-		return 0
+func (g *game) getRemainingRollsForCurrentFrame() int {
+	currentFrame := g.frames[len(g.frames)-1]
+	//For the last frame, consider bonus rolls to be remaining rolls in that frame.
+	if len(g.frames) == framesPerGame && (currentFrame.isStrike() || currentFrame.isSpare()) {
+		return currentFrame.bonus
 	}
-	return 2 - f.acceptedRolls
+	return 2 - currentFrame.acceptedRolls
 }
 
 func (f *frame) isStrike() bool {
-	return f.acceptedRolls == 1 && f.rollScore == 10
+	return f.acceptedRolls == 1 && f.rollScore == pinCount
 }
 
 func (f *frame) isSpare() bool {
-	return f.acceptedRolls == 2 && f.rollScore == 10
+	return f.acceptedRolls == 2 && f.rollScore == pinCount
 }
 
 func (g *game) allFramesFinished() bool {
@@ -61,7 +72,6 @@ func (g *game) acceptRoll(roll int) error {
 		return errors.New("game over")
 	}
 	addBonuses(g.frames, roll)
-
 	if !g.allFramesFinished() {
 		if len(g.frames) == 0 || g.frames[len(g.frames)-1].finished {
 			f := frame{}
@@ -114,18 +124,13 @@ func (g *game) getScore() int {
 
 func main() {
 	g := NewGame()
-	for i := 0; i < 22; i++ {
-		err := g.acceptRoll(5)
+	for i := 0; i < 12; i++ {
+		err := g.acceptRoll(10)
 		if err != nil {
 			fmt.Printf("acceptRoll failed with error: %s", err.Error())
 			continue
 		}
-		currentFrame, err := g.getCurrentFrame()
-		if err != nil {
-			fmt.Printf("getCurrentFrame failed with error: %s", err.Error())
-			continue
-		}
-		fmt.Printf("Remaining rolls in frame: %d", currentFrame.remainingRolls())
+		fmt.Printf("Remaining rolls in current frame: %d", g.getRemainingRollsForCurrentFrame())
 		fmt.Println("")
 		fmt.Printf("Current score: %d", g.getScore())
 		fmt.Println("")
