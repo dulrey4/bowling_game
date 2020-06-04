@@ -48,12 +48,12 @@ func TestVariousGames(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		t.Logf("Test: %s", tc.testName)
 		g := NewGame()
 		for i, roll := range tc.rolls {
 			err := g.acceptRoll(roll)
 			if err != nil {
 				if tc.expectedErr.Error() != err.Error() || tc.expectedErrorRollIndex != i {
-					t.Logf("Test: %s", tc.testName)
 					t.Errorf("Unexpected error: %s", err.Error())
 				}
 			}
