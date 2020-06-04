@@ -15,10 +15,15 @@ func NewGame() game {
 }
 
 type frame struct {
-	totalScore    int
+	rollScore    int
+	bonusScore int
 	acceptedRolls int
 	finished      bool
 	bonus         int
+}
+
+func (f *frame) getTotalScore() int{
+	return f.rollScore + f.bonusScore
 }
 
 func (g *game) getCurrentFrame() (frame, error) {
@@ -36,11 +41,11 @@ func (f *frame) remainingRolls() int {
 }
 
 func (f *frame) isStrike() bool {
-	return f.acceptedRolls == 1 && f.totalScore == 10
+	return f.acceptedRolls == 1 && f.rollScore == 10
 }
 
 func (f *frame) isSpare() bool {
-	return f.acceptedRolls == 2 && f.totalScore == 10
+	return f.acceptedRolls == 2 && f.rollScore == 10
 }
 
 func (g *game) allFramesFinished() bool {
@@ -61,7 +66,7 @@ func (g *game) acceptRoll(roll int) error {
 		if len(g.frames) == 0 || g.frames[len(g.frames)-1].finished {
 			f := frame{}
 			f.acceptedRolls += 1
-			f.totalScore += roll
+			f.rollScore += roll
 			if f.isStrike() {
 				f.finished = true
 				f.bonus = 2
@@ -71,7 +76,7 @@ func (g *game) acceptRoll(roll int) error {
 			frame := g.frames[len(g.frames)-1]
 			frame.finished = true
 			frame.acceptedRolls += 1
-			frame.totalScore += roll
+			frame.rollScore += roll
 			if frame.isSpare() {
 				frame.bonus = 1
 			}
@@ -93,7 +98,7 @@ func bonusesRemain(frames []frame) bool {
 func addBonuses(frames []frame, roll int) {
 	for i, frame := range frames {
 		if frame.bonus > 0 {
-			frames[i].totalScore = frames[i].totalScore + roll
+			frames[i].bonusScore += roll
 			frames[i].bonus = frames[i].bonus - 1
 		}
 	}
@@ -102,7 +107,7 @@ func addBonuses(frames []frame, roll int) {
 func (g *game) getScore() int {
 	var score int
 	for _, frame := range g.frames {
-		score += frame.totalScore
+		score += frame.getTotalScore()
 	}
 	return score
 }
