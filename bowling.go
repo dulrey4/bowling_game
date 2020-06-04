@@ -8,15 +8,24 @@ import (
 const framesPerGame = 10
 const pinCount = 10
 
+type BowlingGame interface{
+	getRemainingRollsForCurrentFrame() int
+	acceptRoll(int) error
+	isFinished() bool
+	getScore() int
+
+}
+
+
+func NewBowlingGame() BowlingGame {
+	return &defaultBowlingGame{}
+}
+
 /*
 	game is a bowling game. It is composed of a series of frames, of which there are ten.
 */
-type game struct {
+type defaultBowlingGame struct {
 	frames []frame
-}
-
-func NewGame() game {
-	return game{}
 }
 
 /*
@@ -28,27 +37,11 @@ type frame struct {
 	bonusScore    int
 	acceptedRolls int
 	finished      bool
-	bonus         int
+	bonusRolls    int
 }
 
 func (f *frame) getTotalScore() int {
 	return f.rollScore + f.bonusScore
-}
-
-func (g *game) getCurrentFrame() (frame, error) {
-	if len(g.frames) == 0 {
-		return frame{}, errors.New("no current frame")
-	}
-	return g.frames[len(g.frames)-1], nil
-}
-
-func (g *game) getRemainingRollsForCurrentFrame() int {
-	currentFrame := g.frames[len(g.frames)-1]
-	//For the last frame, consider bonus rolls to be remaining rolls in that frame.
-	if len(g.frames) == framesPerGame && (currentFrame.isStrike() || currentFrame.isSpare()) {
-		return currentFrame.bonus
-	}
-	return 2 - currentFrame.acceptedRolls
 }
 
 func (f *frame) isStrike() bool {
@@ -59,27 +52,42 @@ func (f *frame) isSpare() bool {
 	return f.acceptedRolls == 2 && f.rollScore == pinCount
 }
 
-func (g *game) allFramesFinished() bool {
-	return len(g.frames) > 9 && g.frames[9].finished
+func (g *defaultBowlingGame) getRemainingRollsForCurrentFrame() int {
+	currentFrame := g.frames[len(g.frames)-1]
+	//For the last frame, consider bonus rolls to be remaining rolls in that frame.
+	if len(g.frames) == framesPerGame && (currentFrame.isStrike() || currentFrame.isSpare()) {
+		return currentFrame.bonusRolls
+	}
+	return 2 - currentFrame.acceptedRolls
 }
 
-func (g *game) isFinished() bool {
-	return g.allFramesFinished() && !bonusesRemain(g.frames)
+func (g *defaultBowlingGame) getScore() int {
+	var score int
+	for _, frame := range g.frames {
+		score += frame.getTotalScore()
+	}
+	return score
 }
 
-func (g *game) acceptRoll(roll int) error {
+func (g *defaultBowlingGame) isFinished() bool {
+	return allFramesFinished(g.frames) && !bonusesRemain(g.frames)
+}
+
+func (g *defaultBowlingGame) acceptRoll(roll int) error {
 	if g.isFinished() {
 		return errors.New("game over")
 	}
+
 	addBonuses(g.frames, roll)
-	if !g.allFramesFinished() {
+
+	if !allFramesFinished(g.frames) {
 		if len(g.frames) == 0 || g.frames[len(g.frames)-1].finished {
 			f := frame{}
 			f.acceptedRolls += 1
 			f.rollScore += roll
 			if f.isStrike() {
 				f.finished = true
-				f.bonus = 2
+				f.bonusRolls = 2
 			}
 			g.frames = append(g.frames, f)
 		} else {
@@ -88,7 +96,7 @@ func (g *game) acceptRoll(roll int) error {
 			frame.acceptedRolls += 1
 			frame.rollScore += roll
 			if frame.isSpare() {
-				frame.bonus = 1
+				frame.bonusRolls = 1
 			}
 			g.frames[len(g.frames)-1] = frame
 		}
@@ -96,9 +104,13 @@ func (g *game) acceptRoll(roll int) error {
 	return nil
 }
 
+func allFramesFinished(frames []frame) bool {
+	return len(frames) > 9 && frames[9].finished
+}
+
 func bonusesRemain(frames []frame) bool {
 	for _, frame := range frames {
-		if frame.bonus != 0 {
+		if frame.bonusRolls != 0 {
 			return true
 		}
 	}
@@ -107,23 +119,15 @@ func bonusesRemain(frames []frame) bool {
 
 func addBonuses(frames []frame, roll int) {
 	for i, frame := range frames {
-		if frame.bonus > 0 {
+		if frame.bonusRolls > 0 {
 			frames[i].bonusScore += roll
-			frames[i].bonus = frames[i].bonus - 1
+			frames[i].bonusRolls = frames[i].bonusRolls - 1
 		}
 	}
 }
 
-func (g *game) getScore() int {
-	var score int
-	for _, frame := range g.frames {
-		score += frame.getTotalScore()
-	}
-	return score
-}
-
 func main() {
-	g := NewGame()
+	g := NewBowlingGame()
 	for i := 0; i < 12; i++ {
 		err := g.acceptRoll(10)
 		if err != nil {

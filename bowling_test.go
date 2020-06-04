@@ -49,7 +49,7 @@ func TestVariousGames(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Logf("Test: %s", tc.testName)
-		g := NewGame()
+		g := NewBowlingGame()
 		for i, roll := range tc.rolls {
 			err := g.acceptRoll(roll)
 			if err != nil {
