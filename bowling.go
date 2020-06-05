@@ -8,14 +8,12 @@ import (
 const framesPerGame = 10
 const pinCount = 10
 
-type BowlingGame interface{
+type BowlingGame interface {
 	getRemainingRollsForCurrentFrame() int
 	acceptRoll(int) error
 	isFinished() bool
 	getScore() int
-
 }
-
 
 func NewBowlingGame() BowlingGame {
 	return &defaultBowlingGame{}
@@ -37,8 +35,7 @@ type frame struct {
 	bonusRolls    int
 }
 
-
-func newFrame(roll int) frame{
+func newFrame(roll int) frame {
 	f := frame{}
 	f.acceptedRolls += 1
 	f.rollScore += roll
@@ -49,7 +46,7 @@ func newFrame(roll int) frame{
 	return f
 }
 
-func (f *frame) finishFrame(roll int){
+func (f *frame) finishFrame(roll int) {
 	f.finished = true
 	f.acceptedRolls += 1
 	f.rollScore += roll
@@ -108,7 +105,7 @@ func (g *defaultBowlingGame) acceptRoll(roll int) error {
 	return nil
 }
 
-func currentFrameFinished(frames []frame) bool{
+func currentFrameFinished(frames []frame) bool {
 	return len(frames) == 0 || frames[len(frames)-1].finished
 }
 
