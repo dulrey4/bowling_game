@@ -52,15 +52,15 @@ func TestVariousGames(t *testing.T) {
 		g := NewBowlingGame()
 		for i, roll := range tc.rolls {
 			err := g.acceptRoll(roll)
-			if err != nil {
-				if tc.expectedErr.Error() != err.Error() || tc.expectedErrorRollIndex != i {
-					t.Errorf("Unexpected error: %s", err.Error())
-				}
+			if err != nil && i != tc.expectedErrorRollIndex{
+				t.Errorf("Got unexpected error %s", err.Error())
+			} else if err == nil && i == tc.expectedErrorRollIndex && tc.expectedErr != nil{
+				t.Error("expected error and got nil")
 			}
 		}
 		finalScore := g.getScore()
 		if tc.expectedFinalScore != finalScore {
-			t.Errorf("Expected final score (%d) actual score (%d)", tc.expectedErr, finalScore)
+			t.Errorf("Expected final score (%d) actual score (%d)", tc.expectedFinalScore, finalScore)
 		}
 	}
 }
