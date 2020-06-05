@@ -21,15 +21,12 @@ func NewBowlingGame() BowlingGame {
 	return &defaultBowlingGame{}
 }
 
-/*
-	game is a bowling game. It is composed of a series of frames, of which there are ten.
-*/
 type defaultBowlingGame struct {
 	frames []frame
 }
 
 /*
-	frame stores data associated with a given set of fresh pins.	A frame is considered finished when either two rolls have been made, or a strike has occurred.
+	frame stores data associated with a given set of pins. A frame is considered finished when either two rolls have been made, or a strike has occurred.
 	Evaluation of the bonus score is not required to mark a frame finished.
 */
 type frame struct {
@@ -81,27 +78,37 @@ func (g *defaultBowlingGame) acceptRoll(roll int) error {
 	addBonuses(g.frames, roll)
 
 	if !allFramesFinished(g.frames) {
-		if len(g.frames) == 0 || g.frames[len(g.frames)-1].finished {
-			f := frame{}
-			f.acceptedRolls += 1
-			f.rollScore += roll
-			if f.isStrike() {
-				f.finished = true
-				f.bonusRolls = 2
-			}
-			g.frames = append(g.frames, f)
+		if currentFrameFinished(g.frames) {
+			g.frames = append(g.frames, startNewFrame(roll))
 		} else {
-			frame := g.frames[len(g.frames)-1]
-			frame.finished = true
-			frame.acceptedRolls += 1
-			frame.rollScore += roll
-			if frame.isSpare() {
-				frame.bonusRolls = 1
-			}
-			g.frames[len(g.frames)-1] = frame
+			g.frames[len(g.frames)-1].finishFrame(roll)
 		}
 	}
 	return nil
+}
+
+func startNewFrame(roll int) frame{
+	f := frame{}
+	f.acceptedRolls += 1
+	f.rollScore += roll
+	if f.isStrike() {
+		f.finished = true
+		f.bonusRolls = 2
+	}
+	return f
+}
+
+func (f *frame) finishFrame(roll int){
+	f.finished = true
+	f.acceptedRolls += 1
+	f.rollScore += roll
+	if f.isSpare() {
+		f.bonusRolls = 1
+	}
+}
+
+func currentFrameFinished(frames []frame) bool{
+	return len(frames) == 0 || frames[len(frames)-1].finished
 }
 
 func allFramesFinished(frames []frame) bool {
