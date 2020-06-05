@@ -1,4 +1,4 @@
-package main
+package bowling_game
 
 import (
 	"testing"
@@ -51,14 +51,14 @@ func TestVariousGames(t *testing.T) {
 		t.Logf("Test: %s", tc.testName)
 		g := NewBowlingGame()
 		for i, roll := range tc.rolls {
-			err := g.acceptRoll(roll)
+			err := g.AcceptRoll(roll)
 			if err != nil && i != tc.expectedErrorRollIndex && tc.expectedErr == nil {
 				t.Errorf("Got unexpected error %s", err.Error())
 			} else if err == nil && i == tc.expectedErrorRollIndex && tc.expectedErr != nil {
 				t.Error("expected error and got nil")
 			}
 		}
-		finalScore := g.getScore()
+		finalScore := g.GetScore()
 		if tc.expectedFinalScore != finalScore {
 			t.Errorf("Expected final score (%d) actual score (%d)", tc.expectedFinalScore, finalScore)
 		}
