@@ -113,7 +113,7 @@ func currentFrameFinished(frames []frame) bool{
 }
 
 func allFramesFinished(frames []frame) bool {
-	return len(frames) > 9 && frames[9].finished
+	return len(frames) == framesPerGame && frames[framesPerGame-1].finished
 }
 
 func bonusesRemain(frames []frame) bool {
