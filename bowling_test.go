@@ -34,8 +34,8 @@ func TestVariousGames(t *testing.T) {
 			expectedFinalScore: 150,
 		},
 		{
-			testName:           "All spares",
-			rolls:              []int{2, 3, 4, 1, 5, 0, 0, 5, 3, 2, 1, 4, 0, 5, 5, 0, 3, 2, 10, 5, 5}, //Average game ending with a strike.
+			testName:           "Normal game with strike at end",
+			rolls:              []int{2, 3, 4, 1, 5, 0, 0, 5, 3, 2, 1, 4, 0, 5, 5, 0, 3, 2, 10, 5, 5},
 			expectedFinalScore: 65,
 		},
 		{
