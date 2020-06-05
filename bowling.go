@@ -37,6 +37,27 @@ type frame struct {
 	bonusRolls    int
 }
 
+
+func newFrame(roll int) frame{
+	f := frame{}
+	f.acceptedRolls += 1
+	f.rollScore += roll
+	if f.isStrike() {
+		f.finished = true
+		f.bonusRolls = 2
+	}
+	return f
+}
+
+func (f *frame) finishFrame(roll int){
+	f.finished = true
+	f.acceptedRolls += 1
+	f.rollScore += roll
+	if f.isSpare() {
+		f.bonusRolls = 1
+	}
+}
+
 func (f *frame) getTotalScore() int {
 	return f.rollScore + f.bonusScore
 }
@@ -85,26 +106,6 @@ func (g *defaultBowlingGame) acceptRoll(roll int) error {
 		}
 	}
 	return nil
-}
-
-func newFrame(roll int) frame{
-	f := frame{}
-	f.acceptedRolls += 1
-	f.rollScore += roll
-	if f.isStrike() {
-		f.finished = true
-		f.bonusRolls = 2
-	}
-	return f
-}
-
-func (f *frame) finishFrame(roll int){
-	f.finished = true
-	f.acceptedRolls += 1
-	f.rollScore += roll
-	if f.isSpare() {
-		f.bonusRolls = 1
-	}
 }
 
 func currentFrameFinished(frames []frame) bool{
