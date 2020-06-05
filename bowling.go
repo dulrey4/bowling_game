@@ -79,7 +79,7 @@ func (g *defaultBowlingGame) acceptRoll(roll int) error {
 
 	if !allFramesFinished(g.frames) {
 		if currentFrameFinished(g.frames) {
-			g.frames = append(g.frames, startNewFrame(roll))
+			g.frames = append(g.frames, newFrame(roll))
 		} else {
 			g.frames[len(g.frames)-1].finishFrame(roll)
 		}
@@ -87,7 +87,7 @@ func (g *defaultBowlingGame) acceptRoll(roll int) error {
 	return nil
 }
 
-func startNewFrame(roll int) frame{
+func newFrame(roll int) frame{
 	f := frame{}
 	f.acceptedRolls += 1
 	f.rollScore += roll
